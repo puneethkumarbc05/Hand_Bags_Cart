@@ -1,10 +1,10 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import "../css/Home_page.css"
 import { Link } from 'react-router-dom'
-import Cart_dropDown from './Cart_dropDown'
-import Category_list from './Category_list'
-import Home_Page_Image_Wraap from './Home_Page_Image_Wraap'
-import Product_card from './Product_card'
+import Cart_dropDown from '../components/Cart_dropDown'
+import Category_list from '../components/Category_list'
+import Home_Page_Image_Wraap from '../components/Home_Page_Image_Wraap'
+import Product_card from '../components/Product_card'
 import { Row, Col } from "react-bootstrap"
 export const productListDetails = [
     { name: 'abcd', description: 'ldabcjbjfh  kj efkh hk', cost: '₹234', productID: '#fgfg565', imgsrc: 'https://cdn.pixabay.com/photo/2015/08/10/20/14/handbag-883110_640.jpg' },
@@ -18,6 +18,25 @@ export const productListDetails = [
 ]
 
 const Home_page = () => {
+    const [cartProducts, setCartProducts] = useState([])
+
+    useEffect(() => {
+        const previousCartItems = sessionStorage.getItem('cartItems')
+        if (previousCartItems) {
+            setCartProducts(JSON.parse(previousCartItems))
+            sessionStorage.removeItem('cartItems')
+        }
+        return;
+    }, [])
+
+    function _addProductFromCart(product) {
+        const tempProduct = [...cartProducts]
+        if (tempProduct.filter(r => r.productID === product.productID).length !== 0) {
+            tempProduct.filter(r => r.productID === product.productID).length === 0 && tempProduct.push(product)
+            setCartProducts(tempProduct)
+        }
+    }
+
     return (
         <div className='home-page-wrapp'>
             <div className="home-page-header-wrapp">
@@ -32,30 +51,31 @@ const Home_page = () => {
                 </div>
             </div>
             <div className="home_page_body_wrapp">
-                <div className="Home_page_componytitle_wrapp">
-                    <div className="Home_page_componytitle">
-                        <div className="Home_page_componytitle_mainTitle">HAND<span>BAGS</span></div>
-                        <div className="Home_page_componytitle_subTitle">Be Model Choice in That</div>
+                <div className='Home_page_componytitle_container'>
+                    <div className="Home_page_componytitle_wrapp">
+                        <div className="Home_page_componytitle">
+                            <div className="Home_page_componytitle_mainTitle">HAND<span>BAGS</span></div>
+                            <div className="Home_page_componytitle_subTitle">Be Model Choice in That</div>
+                        </div>
+                        <div className="search_field_wrapp">
+                            <img src={require('../../images/icons8-search-50.png')} width='10px' />
+                            <input type='text' />
+                            <button>Search</button>
+                        </div>
+                        <Cart_dropDown cartProducts={cartProducts} />
                     </div>
-                    <div className="search_field_wrapp">
-                        <img src="../images/search.svg" width='10px' />
-                        <input type='text' />
-                        <button>Search</button>
-                    </div>
-                    <Cart_dropDown />
+                    <Category_list />
                 </div>
-                <Category_list />
                 <Home_Page_Image_Wraap />
+                <div className='Product_list_name'>Featured Products</div>
                 <div className='Product_list'>
                     <Row>
-                        {productListDetails.map(product => {
+                        {productListDetails.map((product, index) => {
                             return <Col xl={3} lg={3} md={6} sm={12} xs={12} className='product_row'>
                                 <Product_card
-                                    cost={product.cost}
-                                    description={product.description}
-                                    name={product.name}
-                                    imgsrc={product.imgsrc}
-                                    productID={product.productID}
+                                    details={product}
+                                    index={index}
+                                    _addProductFromCart={_addProductFromCart}
                                 />
                             </Col>
                         })}
